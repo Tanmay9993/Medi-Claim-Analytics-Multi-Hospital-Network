@@ -4,14 +4,15 @@ This repository includes **placeholder configuration files** required for local 
 They are intentionally committed **without any real values**.
 
 ### Included Placeholder Files
-- `.env` – Environment variable definitions 
-SNOWFLAKE_ACCOUNT=
-SNOWFLAKE_USER=
-SNOWFLAKE_ROLE=
-SNOWFLAKE_WAREHOUSE=
-SNOWFLAKE_DATABASE=
-SNOWFLAKE_SCHEMA=
-PRIVATE_KEY_PATH=
+- `.env` – Environment variable definitions
+  
+SNOWFLAKE_ACCOUNT=      
+SNOWFLAKE_USER=      
+SNOWFLAKE_ROLE=      
+SNOWFLAKE_WAREHOUSE=      
+SNOWFLAKE_DATABASE=      
+SNOWFLAKE_SCHEMA=      
+PRIVATE_KEY_PATH=      
 
 - `rsa_key.p8` – RSA private key placeholder 
 - `rsa_key.pub` – RSA public key placeholder 
