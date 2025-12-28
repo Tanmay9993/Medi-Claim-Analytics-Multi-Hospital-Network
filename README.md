@@ -57,6 +57,17 @@ These metrics form a **payer performance scorecard** for the selected period.
 
 ---
 
+
+### Dashboard Preview
+
+**Payer Performance – Q1 2020**
+![Dashboard Q4 2020](dashboard_images/Claims_Financial_Audit_2020_Q4.png)
+
+**Payer Performance – Q1 2021**
+![Dashboard Q1 2021](dashboard_images/Claims_Financial_Audit_2021_Q1.png)
+
+---
+
 ### Business Use Case
 The dashboard supports **insurance payer performance review**, helping teams:
 - Decide which payers require follow-up or investigation
