@@ -1,7 +1,7 @@
 
 import streamlit as st
 import pandas as pd
-from connect import run_query
+from Connect import run_query
 from datetime import date
 import plotly.express as px
 
