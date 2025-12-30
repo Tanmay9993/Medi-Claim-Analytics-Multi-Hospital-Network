@@ -129,4 +129,4 @@ Because the audit logic is embedded in the warehouse:
 ---
 
 ## Summary
-This data model progressively transforms raw claims and transaction data into a **single, governed audit fact table** optimized for **period-based insurance payer performance analytics**, ensuring accuracy, maintainability, and decision-ready insights.
+This data model progressively transforms raw claims and transaction data into a **single, governed audit fact table** optimized for **period-based insurance payer performance analytics**, ensuring accuracy, maintainability, and decision-ready insights. 

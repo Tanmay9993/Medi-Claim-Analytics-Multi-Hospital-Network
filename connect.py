@@ -89,4 +89,4 @@ if __name__ == "__main__":
         # Print a full traceback to help debugging missing env or key issues.
         import traceback
         traceback.print_exc()
-        print("Snowflake connection failed:", str(exc))
+        print("Snowflake connection failed:", str(exc)) 
