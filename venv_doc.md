@@ -14,4 +14,6 @@ source .venv/bin/activate
 
 # install dependencies (if you have requirements.txt)
 pip install --upgrade pip setuptools wheel
-pip install -r requirements.txt 
+pip install -r requirements.txt        
+
+
