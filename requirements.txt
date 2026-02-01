@@ -4,3 +4,8 @@ cryptography
 pandas
 streamlit
 plotly
+reportlab
+langgraph
+openai
+typing
+kaleido

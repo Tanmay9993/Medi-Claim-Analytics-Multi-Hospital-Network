@@ -1,3 +1,6 @@
+# =========================================================
+# File: Audit_Dashboard.py
+# =========================================================
 
 import streamlit as st
 import pandas as pd
@@ -5,10 +8,125 @@ from Connect import run_query
 from datetime import date
 import plotly.express as px
 
+# ---------------------------------------------------------
+# Page config
+# ---------------------------------------------------------
 st.set_page_config(
     page_title="Audit Dashboard",
     layout="wide",
-) 
+)
+
+# ---------------------------------------------------------
+# Global CSS: sidebar + dataframe fonts
+# ---------------------------------------------------------
+st.markdown(
+    """
+    <style>
+    /* Sidebar container */
+    section[data-testid="stSidebar"] {
+        font-size: 22px;
+    }
+
+    /* Sidebar labels and text */
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] div {
+        font-size: 22px !important;
+    }
+
+    /* Sidebar headers */
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3 {
+        font-size: 22px !important;
+        font-weight: 600;
+    }
+
+    /* Sidebar date input text */
+    section[data-testid="stSidebar"] input[type="text"] {
+        font-size: 20px !important;
+        padding: 4px 6px !important;
+    }
+
+    /* Sidebar buttons */
+    section[data-testid="stSidebar"] button {
+        font-size: 22px !important;
+        padding: 8px 12px;
+    }
+
+    /* DataFrame fonts (bottom right table) */
+    div[data-testid="stDataFrame"] div[role="columnheader"] {
+        font-size: 22px !important;
+        font-weight: 600 !important;
+    }
+    div[data-testid="stDataFrame"] div[role="gridcell"] {
+        font-size: 20px !important;
+        padding: 4px 8px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    """
+    <style>
+    /* Make EVERYTHING inside st.dataframe bigger */
+    div[data-testid="stDataFrame"] * {
+        font-size: 20px !important;
+    }
+
+    /* Stronger header styling */
+    div[data-testid="stDataFrame"] div[role="columnheader"] {
+        font-weight: 700 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.markdown(
+    """
+    <style>
+    /* Scrollable, large-font table for contract decision (bottom-right) */
+    .audit-big-table-container {
+        max-height: 470px;
+        overflow-y: auto;
+        overflow-x: auto;
+        border: 1px solid #e5e7eb;
+    }
+
+    .audit-big-table-container table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 20px;
+    }
+
+    .audit-big-table-container th {
+        font-size: 20px;
+        font-weight: 600;
+        padding: 1px 2px;
+        background-color: #f3f4f6;
+        text-align: left;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .audit-big-table-container td {
+        font-size: 20px;
+        padding: 1px 2px;
+    }
+
+    .audit-big-table-container table,
+    .audit-big-table-container th,
+    .audit-big-table-container td {
+        border: 1px solid #e5e7eb;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # --------- TITLE ---------
 st.markdown(
@@ -16,12 +134,35 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ---------------------------------------------------------
+# Helper: enlarge plot fonts (titles, axes, legend)
+# ---------------------------------------------------------
+def enlarge_plot_fonts(fig):
+    fig.update_layout(
+        title_font=dict(size=22),
+        font=dict(size=20),
+        legend=dict(font=dict(size=20)),
+        margin=dict(l=60, r=40, t=60, b=40),
+    )
+    fig.update_xaxes(
+        title_font=dict(size=22),
+        tickfont=dict(size=20),
+    )
+    fig.update_yaxes(
+        title_font=dict(size=22),
+        tickfont=dict(size=20),
+    )
+    return fig
+
+# ---------------------------------------------------------
+# Payer color map
+# ---------------------------------------------------------
 PAYER_COLOR_MAP = {
-    "Medicare": "#438CF3",        
-    "Medicaid": "#A2F2FC",        
-    "Blue Cross Blue Shield": "#35B76B",  
-    "Dual Eligible": "#F28B82",   
-    "Humana": "#8A6FD1",          
+    "Medicare": "#438CF3",
+    "Medicaid": "#A2F2FC",
+    "Blue Cross Blue Shield": "#35B76B",
+    "Dual Eligible": "#F28B82",
+    "Humana": "#8A6FD1",
 }
 
 # ======================================================================
@@ -70,8 +211,8 @@ with st.sidebar:
     )
 
     st.write("")  # spacing
-    st.sidebar.markdown("### Payers to include")
-    # Payer selection (limited to 5)
+    st.markdown("### Payers to include")
+
     payer_filter_names = [
         "Medicare",
         "Medicaid",
@@ -79,15 +220,11 @@ with st.sidebar:
         "Dual Eligible",
         "Humana",
     ]
-    # selected_payers = st.multiselect(
-    #     "Payers to include",
-    #     options=payer_filter_names,
-    #     default=payer_filter_names,
-    # )
+
     selected_payers = [
-    payer for payer in payer_filter_names
-    if st.sidebar.checkbox(payer, value=True)
-    ]   
+        payer for payer in payer_filter_names
+        if st.checkbox(payer, value=True)
+    ]
 
     st.write("")
 
@@ -109,7 +246,7 @@ if not selected_payers:
 
 st.markdown(
     "<h3 style='text-align:center;'>Claims & Revenue Audit Overview</h3>",
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # 1) Pull filtered data from CLAIMS_AUDIT
@@ -183,49 +320,25 @@ underpayment_rate = (
 
 k1, k2, k3, k4 = st.columns(4)
 
-with k1:
-    st.markdown(
+def kpi_card(col, label, value):
+    col.markdown(
         f"""
         <div style="text-align:center;">
-            <div style="font-size:22px; font-weight:600;">Total Charges</div>
-            <div style="font-size:22px; color:gray;">${total_charges:,.2f}</div>
+            <div style="font-size:28px; color:#6c757d; font-weight:600;">
+                {label}
+            </div>
+            <div style="font-size:32px; font-weight:700; margin-top:4px;">
+                {value}
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-with k2:
-    st.markdown(
-        f"""
-        <div style="text-align:center;">
-            <div style="font-size:22px; font-weight:600;">Total Payments</div>
-            <div style="font-size:22px; color:gray;">${total_payments:,.2f}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-with k3:
-    st.markdown(
-        f"""
-        <div style="text-align:center;">
-            <div style="font-size:22px; font-weight:600;">Net Variance</div>
-            <div style="font-size:22px; color:gray;">${net_variance:,.2f}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-with k4:
-    st.markdown(
-        f"""
-        <div style="text-align:center;">
-            <div style="font-size:22px; font-weight:600;">Underpayment Rate</div>
-            <div style="font-size:22px; color:gray;">{underpayment_rate:.1f}%</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+kpi_card(k1, "Total Charges", f"${total_charges:,.2f}")
+kpi_card(k2, "Total Payments", f"${total_payments:,.2f}")
+kpi_card(k3, "Net Variance", f"${net_variance:,.2f}")
+kpi_card(k4, "Underpayment Rate", f"{underpayment_rate:.1f}%")
 
 st.markdown("---")
 
@@ -265,8 +378,6 @@ df_audit["SERVICE_DATE"] = pd.to_datetime(df_audit["SERVICE_DATE"])
 for col in ["TOTAL_CHARGES", "TOTAL_PAYMENTS", "NET_VARIANCE"]:
     df_audit[col] = pd.to_numeric(df_audit[col], errors="coerce")
 
-
-
 # ------------------------------------------------------------------
 # 1) Payments over time (monthly) – one line per payer
 # ------------------------------------------------------------------
@@ -290,13 +401,14 @@ with c1:
         color="PAYER_NAME",
         markers=True,
         title="Payments Over Time by Payer",
-        color_discrete_map=PAYER_COLOR_MAP
+        color_discrete_map=PAYER_COLOR_MAP,
     )
     fig_trend.update_layout(
         xaxis_title="Month",
         yaxis_title="Total Payments",
-        legend_title="Payer"
+        legend_title="Payer",
     )
+    fig_trend = enlarge_plot_fonts(fig_trend)
     st.plotly_chart(fig_trend, width='stretch')
 
 # ------------------------------------------------------------------
@@ -326,23 +438,21 @@ with c2:
         y="NET_VARIANCE",
         title="Top Payers by Payment Variance",
         color="PAYER_NAME",
-        color_discrete_map=PAYER_COLOR_MAP
+        color_discrete_map=PAYER_COLOR_MAP,
     )
     fig_payer_var.update_layout(
         xaxis_title="Payer",
-        yaxis_title="Total Variance (Payments - Charges)",
+        yaxis_title="Total Variance",
         xaxis_tickangle=-35,
         showlegend=False,
     )
+    fig_payer_var = enlarge_plot_fonts(fig_payer_var)
     st.plotly_chart(fig_payer_var, width='stretch')
-
-
 
 r1, r2 = st.columns(2)
 
-
 # ------------------------------------------------------------------
-# 3) Payer variance vs charges (contract review scatter) – colored by payer
+# 3) Payer variance vs charges (contract review scatter)
 # ------------------------------------------------------------------
 df_payer_scatter = (
     df_audit
@@ -366,22 +476,19 @@ with r1:
         hover_name="PAYER_NAME",
         color="PAYER_NAME",
         title="Payer Variance vs Total Charges",
-        color_discrete_map=PAYER_COLOR_MAP
+        color_discrete_map=PAYER_COLOR_MAP,
     )
     fig_scatter.update_layout(
         xaxis_title="Total Charges",
         yaxis_title="Total Variance (Payments - Charges)",
-        legend_title="Payer"
+        legend_title="Payer",
     )
+    fig_scatter = enlarge_plot_fonts(fig_scatter)
     st.plotly_chart(fig_scatter, width='stretch')
 
-
-
 # ------------------------------------------------------------------
-# 4) Distribution of variance per claim
+# 4) Contract decision table (bottom-right)
 # ------------------------------------------------------------------
-
-
 df_payer_decision = (
     df_audit
     .groupby(["PAYER_ID", "PAYER_NAME"], as_index=False)
@@ -401,7 +508,6 @@ df_payer_decision["VARIANCE_PCT"] = (
     df_payer_decision["NET_VARIANCE"] / df_payer_decision["TOTAL_CHARGES"] * 100
 ).round(3)
 
-# Risk Labels
 def risk_label(pct):
     if pct >= 1.0:
         return "🟢 Strong"
@@ -410,7 +516,6 @@ def risk_label(pct):
     else:
         return "🔴 Weak"
 
-# Business Recommendation
 def recommendation(pct):
     if pct >= 1.0:
         return "Favorable contract – No action needed"
@@ -422,14 +527,27 @@ def recommendation(pct):
 df_payer_decision["RISK_LEVEL"] = df_payer_decision["VARIANCE_PCT"].apply(risk_label)
 df_payer_decision["CONTRACT_ACTION"] = df_payer_decision["VARIANCE_PCT"].apply(recommendation)
 
-df_dashboard = df_payer_decision[["PAYER_NAME", "TOTAL_CLAIMS", "TOTAL_CHARGES", "TOTAL_PAYMENTS", "NET_VARIANCE", "VARIANCE_PCT", "RISK_LEVEL", "CONTRACT_ACTION"]].copy()
+df_dashboard = df_payer_decision[
+    [
+        "PAYER_NAME",
+        "TOTAL_CLAIMS",
+        "TOTAL_CHARGES",
+        "TOTAL_PAYMENTS",
+        "NET_VARIANCE",
+        "VARIANCE_PCT",
+        "RISK_LEVEL",
+        "CONTRACT_ACTION",
+    ]
+].copy()
 
 with r2:
-    st.markdown("<br><br><br><br>", unsafe_allow_html=True)
+    # small spacer to align vertically a bit lower
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    st.dataframe(
-    df_dashboard.sort_values("NET_VARIANCE", ascending=False),
-    height=230,
-    width='stretch'
+    df_display = df_dashboard.sort_values("NET_VARIANCE", ascending=False).copy()
+    table_html = df_display.to_html(index=False)
+    st.markdown(
+        f'<div class="audit-big-table-container">{table_html}</div>',
+        unsafe_allow_html=True,
     )
 
